@@ -1,0 +1,9 @@
+{% if FAILED_LOGINS_NOTIFY %}
+<script>
+	phpbb.addAjaxCallback('{{ FAILED_LOGINS_AJAX_CALLBACK }}', function(data) {
+		if(!data.S_USER_WARNING) {
+			$('#failedlogins').remove();
+		}
+	});
+</script>
+{% endif %}

@@ -1,10 +1,9 @@
-<!-- IF FAILED_LOGINS -->
+{% if FAILED_LOGINS_NOTIFY %}
 <div class="rules" id="failedlogins">
-	<div class="inner">{FAILED_LOGINS}<br /><br />
-		<form action="{U_REMOVE_MESSAGE}" method="POST" data-ajax="failedlogins.remove">
-			<input class="button2" type="submit" name="failedlogins_remove" value="{L_REMOVE_MESSAGE}" />
-			{S_FORM_TOKEN}
-		</form>
-	</div>
+	<p>{{ FAILED_LOGINS_NOTIFY }}<br>{{ FAILED_LOGINS_DATE }}</p>
+	<form action="{{ U_FAILED_LOGINS_ACTION }}" method="post" data-ajax="{{ FAILED_LOGINS_AJAX_CALLBACK }}" data-refresh="true">
+		<input class="button2" type="submit" name="submit" value="{{ lang('FAILED_LOGINS_REMOVE_BUTTON') }}">
+		{{ S_FORM_TOKEN }}
+	</form>
 </div>
-<!-- ENDIF -->
+{% endif %}

@@ -1,11 +1,12 @@
 services:
-    tas2580.failedlogins.listener:
-        class: tas2580\failedlogins\event\listener
+    cabot.failedlogins.listener:
+        class: cabot\failedlogins\event\main_listener
         arguments:
-            - @template
-            - @user
-            - @dbal.conn
-            - @request
-            - @log
+            - '@dbal.conn'
+            - '@language'
+            - '@log'
+            - '@request'
+            - '@template'
+            - '@user'
         tags:
             - { name: event.listener }
