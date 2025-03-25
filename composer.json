@@ -1,35 +1,29 @@
 {
-	"name": "tas2580/failedlogins",
+	"name": "cabot/failedlogins",
 	"type": "phpbb-extension",
-	"description": "Log failed logins into user log and display a message to the user.",
-	"homepage": "https://tas2580.net/downloads/phpbb-failed-logins/",
-	"version": "1.1.0",
-	"keywords": ["phpbb", "extension", "login", "security", "fail"],
-	"license": "GPL-2.0",
+	"description": "Log failed login attempts and notify user",
+	"version": "2.0.0",
+	"time": "2025-03-23",
+	"license": "GPL-2.0-only",
 	"authors": [
 		{
-			"name": "tas2580",
-			"email": "mail@tas2580.net",
-			"homepage": "https://tas2580.net",
-			"role": "Developer"
+			"name": "Tobi Schäfer",
+			"role": "Former Developer"
+		},
+		{
+			"name": "cabot",
+			"homepage": "https://forum.cabotweb.fr/",
+			"role": "SushiMaker"
 		}
 	],
 	"require": {
-		"php": ">=5.3.3",
+		"php": ">=7.4",
 		"composer/installers": "~1.0"
 	},
-	"require-dev": {
-		"phpbb/epv": "dev-master"
-	},
 	"extra": {
-		"display-name": "tas2580 Failed logins",
+		"display-name": "Failed logins Log and Notify",
 		"soft-require": {
-			"phpbb/phpbb": ">=3.1.4-RC1,<3.2.0@dev"
-		},
-		"version-check": {
-			"host": "phpbb-versionscheck.cf",
-			"directory": "/tas2580/failedlogins/master",
-			"filename": "version-check.json"
+			"phpbb/phpbb": ">=3.3.0,<4.0.0@dev"
 		}
 	}
 }

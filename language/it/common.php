@@ -35,12 +35,12 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, [
-	'FAILED_LOGINS_LOG'				=> '<strong>Failed login</strong><br>» Username: <strong>%s</strong>',
+	'FAILED_LOGINS_LOG'				=> '<strong>Accesso fallito</strong><br>» Nome utente: <strong>%s</strong>',
 	'FAILED_LOGINS_NOTIFY_LANG'		=> [
-		1	=> 'Since your last visit there were <strong>%1$d</strong> failed login attempt!',
-		2	=> 'Since your last visit there were <strong>%1$d</strong> failed login attempts!',
+		1	=> 'Dall’ultimo accesso ci sono stati <strong>%1$d</strong> tentativo di accesso fallito!',
+		2	=> 'Dall’ultimo accesso ci sono stati <strong>%1$d</strong> tentativi di accesso falliti!',
 	],
-	'FAILED_LOGINS_DATE_LANG'		=> 'Last failed login attempt on: <strong>%s</strong>. If it wasn’t you, it might be worth changing your password.',
-	'FAILED_LOGINS_REMOVE_BUTTON'	=> 'Remove message and reset counter',
-	'FAILED_LOGINS_REMOVED'			=> 'Failed login attempts since the last visit have been reset.',
+	'FAILED_LOGINS_DATE_LANG'		=> 'Ultimo tentativo di accesso fallito il: <strong>%s</strong>. Se non siete stati voi, potrebbe valere la pena di cambiare la password.',
+	'FAILED_LOGINS_REMOVE_BUTTON'	=> 'Rimuovi messaggio e reimposta contatore',
+	'FAILED_LOGINS_REMOVED'			=> 'I tentativi di accesso falliti dall’ultimo accesso sono stati reimpostati.',
 ]);

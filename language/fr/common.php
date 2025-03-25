@@ -1,17 +1,13 @@
 <?php
 /**
-*
-* Failed logins extension for the phpBB Forum Software package.
-* French translation by Galixte (http://www.galixte.com)
-*
-* @copyright (c) 2015 tas2580 <https://tas2580.net>
-* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
-*
-*/
+ *
+ * Failed logins Log and Notify. An extension for the phpBB Forum Software package.
+ *
+ * @copyright (c) 2025, cabot, https://forum.cabotweb.fr/
+ * @license GNU General Public License, version 2 (GPL-2.0)
+ *
+ */
 
-/**
-* DO NOT CHANGE
-*/
 if (!defined('IN_PHPBB'))
 {
 	exit;
@@ -19,7 +15,7 @@ if (!defined('IN_PHPBB'))
 
 if (empty($lang) || !is_array($lang))
 {
-	$lang = array();
+	$lang = [];
 }
 
 // DEVELOPERS PLEASE NOTE
@@ -38,10 +34,13 @@ if (empty($lang) || !is_array($lang))
 // ’ « » “ ” …
 //
 
-$lang = array_merge($lang, array(
-	'FAILED_LOGINS_COUNT'		=> 'Depuis votre dernière visite il y a eu %d tentatives de connexion qui ont échoué !',
-	'ONE_FAILED_LOGIN'			=> 'Depuis votre dernière visite il y a eu une tentative de connexion qui a échoué !',
-	'TRY_TO_LOGIN_FAIL'		=> '<strong>Échec de la connexion</strong><br />» Nom d’utilisateur : %s',
-	'REMOVE_MESSAGE'			=> 'Masquer le message',
-	'REMOVED_FAILED_LOGINS'	=> 'Les tentatives de connexion ayant échoué depuis votre dernière visite ne seront plus affichées.'
-));
+$lang = array_merge($lang, [
+	'FAILED_LOGINS_LOG'				=> '<strong>Échec de connexion</strong><br>» Nom d’utilisateur : <strong>%s</strong>',
+	'FAILED_LOGINS_NOTIFY_LANG'		=> [
+		1	=> 'Depuis votre dernière visite, il y a eu <strong>%1$d</strong> tentative de connexion échouée !',
+		2	=> 'Depuis votre dernière visite, il y a eu <strong>%1$d</strong> tentatives de connexion échouées !',
+	],
+	'FAILED_LOGINS_DATE_LANG'		=> 'Dernière tentative de connexion échouée le : <strong>%s</strong>. Si ce n’était pas vous, il pourrait s’avérer utile de modifier votre mot de passe.',
+	'FAILED_LOGINS_REMOVE_BUTTON'	=> 'Supprimer le message et réinitialiser le compteur',
+	'FAILED_LOGINS_REMOVED'			=> 'Les tentatives de connexion échouées depuis la dernière visite ont été réinitialisées.',
+]);
