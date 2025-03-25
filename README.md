@@ -18,5 +18,9 @@ If a user tries to connect and the connection fails, this extension creates an e
 2. Look for `Failed logins Log and Notify` under the Enabled Extensions list, and click its `Disable` link.
 3. To permanently uninstall, click `Delete Data` and then delete the `/ext/cabot/failedlogins` folder.
 
+## Screenshot
+![faliedlogins](https://github.com/user-attachments/assets/9c6cce75-d718-4710-bf10-6743f3315368)
+
+
 ## License
 [GNU General Public License v2](http://opensource.org/licenses/GPL-2.0)
