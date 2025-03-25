@@ -6,7 +6,7 @@
 If a user tries to connect and the connection fails, this extension creates an entry in the user's log. The next time the user logs in, they will also see the number of failed attempts since their last login and the date and time of the last failed attempt.
 
 ## Install
-1. Download the latest release `Source code`.
+1. Download the latest `Source code`.
 2. Unzip the downloaded release, and change the name of the folder to `failedlogins`.
 3. In the `ext/` directory of your phpBB board, create a new directory named `cabot` (if it does not already exist).
 4. Copy the `failedlogins` folder to `/ext/cabot/`.
