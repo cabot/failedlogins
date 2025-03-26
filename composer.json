@@ -25,5 +25,11 @@
 		"soft-require": {
 			"phpbb/phpbb": ">=3.3.0,<4.0.0@dev"
 		}
+	},
+	"version-check": {
+		"host": "raw.githubusercontent.com",
+		"directory": "/cabot/failedlogins/master",
+		"filename": "versioncheck.json",
+		"ssl": true
 	}
 }
