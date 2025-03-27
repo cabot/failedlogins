@@ -2,8 +2,9 @@
 	"name": "cabot/failedlogins",
 	"type": "phpbb-extension",
 	"description": "Log failed login attempts and notify user",
-	"version": "2.0.0",
-	"time": "2025-03-23",
+	"homepage": "https://github.com/cabot/failedlogins",
+	"version": "2.0.1",
+	"time": "2025-03-27",
 	"license": "GPL-2.0-only",
 	"authors": [
 		{
@@ -15,15 +16,21 @@
 			"homepage": "https://forum.cabotweb.fr/",
 			"role": "SushiMaker"
 		}
+		,
+		{
+			"name": "Skouat",
+			"homepage": "https://github.com/Skouat",
+			"role": "Developer, consultant, eagle-eyed"
+		}
 	],
 	"require": {
-		"php": ">=7.4",
+		"php": ">=7.2",
 		"composer/installers": "~1.0"
 	},
 	"extra": {
 		"display-name": "Failed logins Log and Notify",
 		"soft-require": {
-			"phpbb/phpbb": ">=3.3.0,<4.0.0@dev"
+			"phpbb/phpbb": ">=3.3.11,<4.0.0@dev"
 		},
 		"version-check": {
 			"host": "raw.githubusercontent.com",
