@@ -125,7 +125,7 @@ class main_listener implements EventSubscriberInterface
 	 * Handles the page footer event.
 	 *
 	 * This method performs the following actions:
-	 * - Clears the `failed_logins_count_last` for the current user if the `submit` request parameter is set and the form key is valid.
+	 * - Clears the `failedlogins_count_last` and `failedlogins_timestamp_last` for the current user if the `failedlogins_remove` form key is submitted and valid.
 	 * - If the request is an AJAX request, it triggers an appropriate error message based on the form key validation result.
 	 * - Displays the number of failed login attempts if `failed_logins_count_last` is greater than 0.
 	 * - Adds a form key for `failedlogins_remove` and assigns template variables for displaying the failed login count and the URL to remove the message.
@@ -135,9 +135,8 @@ class main_listener implements EventSubscriberInterface
 	public function notify_failed_logins()
 	{
 		$form_key = 'failedlogins_remove';
-		$submitted = false;
 
-		if ($this->request->is_set_post('submit'))
+		if ($this->request->is_set_post($form_key))
 		{
 			if (check_form_key($form_key))
 			{
@@ -174,10 +173,10 @@ class main_listener implements EventSubscriberInterface
 				trigger_error('FORM_INVALID', E_USER_WARNING);
 			}
 
-			$submitted = true;
+			return;
 		}
 
-		if ($this->user->data['failedlogins_count_last'] > 0 && $submitted === false)
+		if ($this->user->data['failedlogins_count_last'])
 		{
 			$timestamp_last = $this->user->data['failedlogins_timestamp_last'];
 			$formatted_date = $this->user->format_date($timestamp_last, 'l d F Y H:i', true);

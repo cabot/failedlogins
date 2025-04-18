@@ -1,7 +1,7 @@
 {
 	"stable": {
 		"2.0": {
-			"current": "2.0.1",
+			"current": "2.0.2",
 			"download": "https://github.com/cabot/failedlogins/releases/latest/download/cabot_failedlogins.zip",
 			"announcement": "https://github.com/cabot/failedlogins",
 			"eol": null,
