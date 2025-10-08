@@ -10,9 +10,6 @@
 
 namespace cabot\failedlogins\event;
 
-/**
- * @ignore
- */
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class main_listener implements EventSubscriberInterface
@@ -45,17 +42,7 @@ class main_listener implements EventSubscriberInterface
 	/** @var \phpbb\user\user */
 	protected $user;
 
-	/**
-	 * Constructor
-	 *
-	 * @param \phpbb\db\driver\driver_interface		$db				DB driver interface
-	 * @param \phpbb\language\language				$language		Language object
-	 * @param \phpbb\log\log						$log			The phpBB log system
-	 * @param \phpbb\request\request				$request		Request object
-	 * @param \phpbb\template\template				$template		Template object
-	 * @param \phpbb\user							$user			User object
-	 */
-	public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\language\language $language, \phpbb\log\log $log, \phpbb\request\request $request, \phpbb\template\template $template, \phpbb\user $user)
+	public function __construct( \phpbb\db\driver\driver_interface $db, \phpbb\language\language $language, \phpbb\log\log $log, \phpbb\request\request $request, \phpbb\template\template $template, \phpbb\user $user)
 	{
 		$this->db		= $db;
 		$this->language	= $language;
@@ -67,8 +54,6 @@ class main_listener implements EventSubscriberInterface
 
 	/**
 	 * Load common language files during user setup
-	 *
-	 * @param \phpbb\event\data $event Event object
 	 */
 	public function load_language_on_setup($event)
 	{
@@ -82,86 +67,113 @@ class main_listener implements EventSubscriberInterface
 
 	/**
 	 * Handles the event when a login attempt fails.
-	 *
-	 * @param array $event An associative array containing event data, including the username of the failed login attempt.
-	 *
-	 * This method performs the following actions:
-	 * - Increments the failed login counter for the user in the database.
-	 * - Updates the `failedlogins_timestamp_last` to the current time for the user in the database.
-	 * - Logs the failed login attempt in the user log.
+	 * Increments the failed login counter & updates timestamp.
 	 */
 	public function login_box_failed($event)
 	{
-		$sql = 'UPDATE ' . USERS_TABLE . "
-				SET failedlogins_count = failedlogins_count + 1,
-					failedlogins_timestamp_last = " . time() . "
-				WHERE username_clean = '" . $this->db->sql_escape(utf8_clean_string($event['username'])) . "'";
-		$this->db->sql_query($sql);
+		$now = time();
+		$user_id = 0;
 
-		$this->log->add('user', ANONYMOUS, $this->user->ip, 'FAILED_LOGINS_LOG', time(), [
-			'reportee_id'   => ANONYMOUS,
-			'username'  => $event['username'],
-		]);
+		// 1) Prefer user_id if available in the event
+		if (isset($event['result']['user_row']['user_id']))
+		{
+			$user_id = (int) $event['result']['user_row']['user_id'];
+		}
+
+		// 2) Fallback: resolve user_id via username_clean if account exists
+		if ($user_id <= 0 && !empty($event['username']))
+		{
+			$username_clean = utf8_clean_string($event['username']);
+			$sql = 'SELECT user_id
+					FROM ' . USERS_TABLE . "
+					WHERE username_clean = '" . $this->db->sql_escape($username_clean) . "'
+					LIMIT 1";
+			$result = $this->db->sql_query_limit($sql, 1);
+			$row = $this->db->sql_fetchrow($result);
+			$this->db->sql_freeresult($result);
+			if (!empty($row['user_id']))
+			{
+				$user_id = (int) $row['user_id'];
+			}
+		}
+
+		// 3) Update failed logins counter & timestamp for that user_id
+		if ($user_id > 0)
+		{
+			$sql = 'UPDATE ' . USERS_TABLE . "
+					SET failedlogins_count = failedlogins_count + 1,
+						failedlogins_timestamp_last = $now
+					WHERE user_id = $user_id";
+			$this->db->sql_query($sql);
+		}
+
+		// 4) Mog the failed attempt
+		$this->log->add('user', ANONYMOUS, $this->user->ip, 'FAILED_LOGINS_LOG', $now, [
+				'reportee_id' => ANONYMOUS,
+				'username'    => $event['username'] ?? '',
+			]
+		);
 	}
 
 	/**
-	 * Resets the failed login attempts for the current user.
-	 *
-	 * This method updates the `failedlogins_count_last` to the current `failedlogins_count` and
-	 * resets the `failedlogins_count` to 0, for the user currently logged in.
-	 *
-	 * @return void
+	 * On successful login, move current counter to *_count_last then reset it.
 	 */
 	public function login_box_redirect()
 	{
-		$sql = 'UPDATE ' . USERS_TABLE . '
-				SET failedlogins_count_last = failedlogins_count,
-					failedlogins_count = 0
-				WHERE user_id = ' . (int) $this->user->data['user_id'];
+		$user_id = $this->user->data['user_id'] ?? 0;
+		if ($user_id <= 0 || $user_id === ANONYMOUS)
+		{
+			return;
+		}
+
+		$sql = 'UPDATE ' . USERS_TABLE . "
+			SET failedlogins_count_last = failedlogins_count,
+			    failedlogins_count = 0
+			WHERE user_id = $user_id";
 		$this->db->sql_query($sql);
 	}
 
 	/**
-	 * Handles the page footer event.
-	 *
-	 * This method performs the following actions:
-	 * - Clears the `failedlogins_count_last` and `failedlogins_timestamp_last` for the current user if the `failedlogins_remove` form key is submitted and valid.
-	 * - If the request is an AJAX request, it triggers an appropriate error message based on the form key validation result.
-	 * - Displays the number of failed login attempts if `failed_logins_count_last` is greater than 0.
-	 * - Adds a form key for `failedlogins_remove` and assigns template variables for displaying the failed login count and the URL to remove the message.
-	 *
-	 * @return void
+	 * Display the notification to logged-in users and allow them to clear it.
 	 */
 	public function notify_failed_logins()
 	{
+		$user_id = $this->user->data['user_id'] ?? 0;
+		if ($user_id <= 0 || $user_id === ANONYMOUS)
+		{
+			return;
+		}
+
 		$form_key = 'failedlogins_remove';
 
+		// Handle user action to remove notification
 		if ($this->request->is_set_post($form_key))
 		{
 			if (check_form_key($form_key))
 			{
-				$sql = 'UPDATE ' . USERS_TABLE . '
+				$sql = 'UPDATE ' . USERS_TABLE . "
 						SET failedlogins_count_last = 0,
 							failedlogins_timestamp_last = 0
-						WHERE user_id = ' . (int) $this->user->data['user_id'];
+						WHERE user_id = $user_id";
 				$this->db->sql_query($sql);
 
 				$message = $this->language->lang('FAILED_LOGINS_REMOVED');
 
 				if ($this->request->is_ajax())
 				{
-					$json_response = new \phpbb\json_response();
-					return $json_response->send([
-						'MESSAGE_TITLE'	=> $this->language->lang('INFORMATION'),
+					$json = new \phpbb\json_response();
+					return $json->send([
+						'MESSAGE_TITLE' => $this->language->lang('INFORMATION'),
 						'MESSAGE_TEXT'  => $message,
 						'REFRESH_DATA'  => [
 							'time' => 3,
-							'url'  => $this->user->data['session_page'],
+							'url'  => $this->user->data['session_page'] ?? '',
 						],
 					]);
 				}
 
-				$message .= '<br><br>' . $this->language->lang('RETURN_PAGE', '<a href="' . $this->user->data['session_page'] . '">', '</a>');
+				$return = $this->user->data['session_page'] ?? '';
+				$message .= '<br><br>' . $this->language->lang('RETURN_PAGE', '<a href="' . $return . '">', '</a>');
 				trigger_error($message);
 			}
 			else
@@ -172,20 +184,30 @@ class main_listener implements EventSubscriberInterface
 				}
 				trigger_error('FORM_INVALID', E_USER_WARNING);
 			}
-
 			return;
 		}
 
-		if ($this->user->data['failedlogins_count_last'])
+		// Fetch fresh data for display
+		$sql = 'SELECT failedlogins_count_last, failedlogins_timestamp_last
+				FROM ' . USERS_TABLE . "
+				WHERE user_id = $user_id";
+		$result = $this->db->sql_query_limit($sql, 1);
+		$row = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		$count_last = (int)($row['failedlogins_count_last'] ?? 0);
+
+		if ($count_last > 0)
 		{
-			$timestamp_last = $this->user->data['failedlogins_timestamp_last'];
-			$formatted_date = $this->user->format_date($timestamp_last, 'l d F Y H:i', true);
+			$timestamp_last = (int)($row['failedlogins_timestamp_last'] ?? 0);
+			$formatted_date = $timestamp_last ? $this->user->format_date($timestamp_last, 'l d F Y H:i', true) : '';
+
 			add_form_key($form_key);
 
 			$this->template->assign_vars([
-				'FAILED_LOGINS_NOTIFY'			=> $this->language->lang('FAILED_LOGINS_NOTIFY_LANG', (int) $this->user->data['failedlogins_count_last']),
+				'FAILED_LOGINS_NOTIFY'			=> $this->language->lang('FAILED_LOGINS_NOTIFY_LANG', $count_last),
 				'FAILED_LOGINS_DATE'			=> $this->language->lang('FAILED_LOGINS_DATE_LANG', $formatted_date),
-				'U_FAILED_LOGINS_ACTION'		=> generate_board_url() . '/' . $this->user->page['page'],
+				'U_FAILED_LOGINS_ACTION'		=> generate_board_url() . '/' . ($this->user->page['page'] ?? ''),
 				'FAILED_LOGINS_AJAX_CALLBACK'	=> 'failedlogins.remove',
 			]);
 		}
